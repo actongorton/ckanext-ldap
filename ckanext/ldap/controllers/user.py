@@ -1,12 +1,11 @@
 import re
 import uuid
 import logging
-import sys
-import ldap, ldap.filter
+import ldap
+import ldap.filter
 import ckan.plugins as p
 import ckan.model
 import pylons
-
 from ckan.lib.helpers import flash_notice, flash_error
 from ckan.common import _, request
 from ckan.model.user import User
@@ -18,25 +17,34 @@ log = logging.getLogger(__name__)
 
 class MultipleMatchError(Exception):
     pass
+
+
 class UserConflictError(Exception):
     pass
 
 
 class UserController(p.toolkit.BaseController):
+
     def __init__(self):
         ldap.set_option(ldap.OPT_DEBUG_LEVEL, config['ckanext.ldap.debug_level'])
+
     def login_handler(self):
-        """Action called when login in via the LDAP login form"""
+        """
+        Action called when login in via the LDAP login form
+        """
         came_from = request.params.get('came_from', '')
         params = request.POST
+
         if 'login' in params and 'password' in params:
             login = params['login']
             password = params['password']
+
             try:
                 ldap_user_dict = _find_ldap_user(login)
             except MultipleMatchError as e:
                 # Multiple users match. Inform the user and try again.
                 return self._login_failed(notice=str(e))
+
             if ldap_user_dict and _check_ldap_password(ldap_user_dict['cn'], password):
                 try:
                     user_name = _get_or_create_ldap_user(ldap_user_dict)
@@ -60,52 +68,56 @@ class UserController(p.toolkit.BaseController):
                     user = User.by_name(user_dict['name'])
                 except p.toolkit.ObjectNotFound:
                     user = None
+
                 if user and user.validate_password(password):
                     return self._login_success(user.name, came_from=came_from)
                 else:
                     return self._login_failed(error=_('Bad username or password.'))
+
             else:
                 return self._login_failed(error=_('Bad username or password.'))
         return self._login_failed(error=_('Please enter a username and password'))
 
     def _login_failed(self, notice=None, error=None):
-        """Handle login failures
-
+        """
+        Handle login failures
         Redirect to /user/login and flash an optional message
-
         @param notice: Optional notice for the user
         @param error: Optional error message for the user
         """
         if notice:
             flash_notice(notice)
+
         if error:
             flash_error(error)
+
         p.toolkit.redirect_to(controller='user', action='login')
 
     def _login_success(self, user_name, came_from):
-        """Handle login success
-
+        """
+        Handle login success
         Saves the user in the session and redirects to user/logged_in
-
         @param user_name: The user name
         """
         pylons.session['ckanext-ldap-user'] = user_name
         pylons.session.save()
         p.toolkit.redirect_to(controller='user', action='logged_in', came_from=came_from)
-        
-def _get_user_dict(user_id):
-    """Calls the action API to get the detail for a user given their id
 
+
+def _get_user_dict(user_id):
+    """
+    Calls the action API to get the detail for a user given their id
     @param user_id: The user id
     """
     context = {'ignore_auth': True}
     data_dict = {'id': user_id}
+
     return p.toolkit.get_action('user_show')(context, data_dict)
 
 
 def _ckan_user_exists(user_name):
-    """Check if a CKAN user name exists, and if that user is an LDAP user.
-
+    """
+    Check if a CKAN user name exists, and if that user is an LDAP user.
     @param user_name: User name to check
     @return: Dictionary defining 'exists' and 'ldap'.
     """
@@ -115,6 +127,7 @@ def _ckan_user_exists(user_name):
         return {'exists': False, 'is_ldap': False}
 
     ldap_user = LdapUser.by_user_id(user['id'])
+
     if ldap_user:
         return {'exists': True, 'is_ldap': True}
     else:
@@ -122,62 +135,73 @@ def _ckan_user_exists(user_name):
 
 
 def _get_unique_user_name(base_name):
-    """Create a unique, valid, non existent user name from the given base name
-
+    """
+    Create a unique, valid, non existent user name from the given base name
     @param base_name: Base name
     @return: A valid user name not currently in use based on base_name
     """
     base_name = re.sub('[^-a-z0-9_]', '_', base_name.lower())
     base_name = base_name[0:100]
+
     if len(base_name) < 2:
         base_name = (base_name + "__")[0:2]
+
     count = 0
     user_name = base_name
+
     while (_ckan_user_exists(user_name))['exists']:
         count += 1
         user_name = "{base}{count}".format(base=base_name[0:100-len(str(count))], count=str(count))
+
     return user_name
 
 
 def _get_or_create_ldap_user(ldap_user_dict):
-    """Get or create a CKAN user from the data returned by the LDAP server
-
+    """
+    Get or create a CKAN user from the data returned by the LDAP server
     @param ldap_user_dict: Dictionary as returned by _find_ldap_user
     @return: The CKAN username of an existing user
     """
     # Look for existing user, and if found return it.
     ldap_user = LdapUser.by_ldap_id(ldap_user_dict['username'])
+
     if ldap_user:
         # TODO: Update the user detail.
         return ldap_user.user.name
     user_dict = {}
-    update=False
+    update = False
+
     # Check whether we have a name conflict (based on the ldap name, without mapping it to allowed chars)
     exists = _ckan_user_exists(ldap_user_dict['username'])
+
     if exists['exists'] and not exists['is_ldap']:
+
         # If ckanext.ldap.migrate is set, update exsting user_dict.
         if not config['ckanext.ldap.migrate']:
-             raise UserConflictError(_('There is a username conflict. Please inform the site administrator.'))
+            raise UserConflictError(_('There is a username conflict. Please inform the site administrator.'))
         else:
             user_dict = _get_user_dict(ldap_user_dict['username'])
-            update=True
+            update = True
         
     # If a user with the same ckan name already exists but is an LDAP user, this means (given that we didn't
     # find it above) that the conflict arises from having mangled another user's LDAP name. There will not
     # however be a conflict based on what is entered in the user prompt - so we can go ahead. The current
     # user's id will just be mangled to something different.
-
     # Now get a unique user name (if not "migrating"), and create the CKAN user and the LdapUser entry.
+
     user_name = user_dict['name'] if update else _get_unique_user_name(ldap_user_dict['username'])
     user_dict.update({
         'name': user_name,
         'email': ldap_user_dict['email'],
         'password': str(uuid.uuid4())
     })
+
     if 'fullname' in ldap_user_dict:
         user_dict['fullname'] = ldap_user_dict['fullname']
+
     if 'about' in ldap_user_dict:
         user_dict['about'] = ldap_user_dict['about']
+
     if update:
         ckan_user = p.toolkit.get_action('user_update')(
             context={'ignore_auth': True},
@@ -188,11 +212,14 @@ def _get_or_create_ldap_user(ldap_user_dict):
             context={'ignore_auth': True},
             data_dict=user_dict
         )
-    ldap_user = LdapUser(user_id=ckan_user['id'], ldap_id = ldap_user_dict['username'])
+
+    ldap_user = LdapUser(user_id=ckan_user['id'], ldap_id=ldap_user_dict['username'])
     ckan.model.Session.add(ldap_user)
     ckan.model.Session.commit()
+
     # Add the user to it's group if needed
     if 'ckanext.ldap.organization.id' in config:
+        # Add new member to the group
         p.toolkit.get_action('member_create')(
             context={'ignore_auth': True},
             data_dict={
@@ -202,24 +229,47 @@ def _get_or_create_ldap_user(ldap_user_dict):
                 'capacity': config['ckanext.ldap.organization.role']
             }
         )
+    elif 'ckanext.ldap.organization.map' in config:
+        # TODO: Get the organizational mapping
+        print('config:')
+        print(config['ckanext.ldap.organization.map'])
+
+        # TODO: Assign the member group
+
+        # p.toolkit.get_action('member_create')(
+        #     context={'ignore_auth': True},
+        #     data_dict={
+        #         'id': config['ckanext.ldap.organization.id'],
+        #         'object': user_name,
+        #         'object_type': 'user',
+        #         'capacity': config['ckanext.ldap.organization.role']
+        #     }
+        # )
+
     return user_name
 
 
 def _find_ldap_user(login):
-    """Find the LDAP user identified by 'login' in the configured ldap database
-
+    """
+    Find the LDAP user identified by 'login' in the configured ldap database
     @param login: The login to find in the LDAP database
     @return: None if no user is found, a dictionary defining 'cn', 'username', 'fullname' and 'email otherwise.
     """
-    cnx = ldap.initialize(config['ckanext.ldap.uri'], bytes_mode=False,
-                          trace_level=config['ckanext.ldap.trace_level'])
+    cnx = ldap.initialize(
+        config['ckanext.ldap.uri'],
+        bytes_mode=False,
+        trace_level=config['ckanext.ldap.trace_level']
+    )
     if config.get('ckanext.ldap.auth.dn'):
         try:
             if config['ckanext.ldap.auth.method'] == 'SIMPLE':
                 cnx.bind_s(config['ckanext.ldap.auth.dn'], config['ckanext.ldap.auth.password'])
             elif config['ckanext.ldap.auth.method'] == 'SASL':
                 if config['ckanext.ldap.auth.mechanism'] == 'DIGEST-MD5':
-                    auth_tokens = ldap.sasl.digest_md5(config['ckanext.ldap.auth.dn'], config['ckanext.ldap.auth.password'])
+                    auth_tokens = ldap.sasl.digest_md5(
+                        config['ckanext.ldap.auth.dn'],
+                        config['ckanext.ldap.auth.password']
+                    )
                     cnx.sasl_interactive_bind_s("", auth_tokens)
                 else:
                     log.error("SASL mechanism not supported: {0}".format(config['ckanext.ldap.auth.mechanism']))
@@ -241,8 +291,10 @@ def _find_ldap_user(login):
     attributes = [config['ckanext.ldap.username']]
     if 'ckanext.ldap.fullname' in config:
         attributes.append(config['ckanext.ldap.fullname'])
+
     if 'ckanext.ldap.email' in config:
         attributes.append(config['ckanext.ldap.email'])
+
     try:
         ret = _ldap_search(cnx, filter_str, attributes, non_unique='log')
         if ret is None and 'ckanext.ldap.search.alt' in config:
@@ -250,12 +302,13 @@ def _find_ldap_user(login):
             ret = _ldap_search(cnx, filter_str, attributes, non_unique='raise')
     finally:
         cnx.unbind()
+
     return ret
 
 
 def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
-    """Helper function to perform the actual LDAP search
-
+    """
+    Helper function to perform the actual LDAP search
     @param cnx: The LDAP connection object
     @param filter_str: The LDAP filter string
     @param attributes: The LDAP attributes to fetch. This *must* include self.ldap_username
@@ -268,12 +321,20 @@ def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
              in attributes; or None if no user was found.
     """
     try:
-        res = cnx.search_s(config['ckanext.ldap.base_dn'], ldap.SCOPE_SUBTREE, filterstr=filter_str, attrlist=attributes)
+        res = cnx.search_s(
+            config['ckanext.ldap.base_dn'],
+            ldap.SCOPE_SUBTREE,
+            filterstr=filter_str,
+            attrlist=attributes
+        )
     except ldap.SERVER_DOWN:
         log.error('LDAP server is not reachable')
         return None
     except ldap.OPERATIONS_ERROR as e:
-        log.error('LDAP query failed. Maybe you need auth credentials for performing searches? Error returned by the server: ' + e.info)
+        log.error(''
+                  'LDAP query failed. Maybe you need auth credentials for performing searches? '
+                  'Error returned by the server: ' + e.info
+                  )
         return None
     except (ldap.NO_SUCH_OBJECT, ldap.REFERRAL) as e:
         log.error('LDAP distinguished name (ckanext.ldap.base_dn) is malformed or does not exist.')
@@ -281,13 +342,17 @@ def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
     except ldap.FILTER_ERROR:
         log.error('LDAP filter (ckanext.ldap.search) is malformed')
         return None
-    if len(res) > 1 and config[u'ckanext.ldap.use_first'] == False:
+
+    if len(res) > 1 and config[u'ckanext.ldap.use_first'] is False:
         if non_unique == u'log':
-            log.error(u'LDAP search.filter search returned more than one entry, ignoring. Fix the search to return only 1 or 0 results.')
+            log.error(
+                u'LDAP search.filter search returned more than one entry, ignoring. '
+                u'Fix the search to return only 1 or 0 results.'
+            )
         elif non_unique == u'raise':
             raise MultipleMatchError(config[u'ckanext.ldap.search.alt_msg'])
         return None
-    elif len(res) == 1 or (len(res) > 0 and config[u'ckanext.ldap.use_first'] == True):
+    elif len(res) == 1 or (len(res) > 0 and config[u'ckanext.ldap.use_first'] is True):
         cn = res[0][0]
         attr = res[0][1]
         ret = {
@@ -300,6 +365,7 @@ def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
             if config[cname] not in attr or not attr[config[cname]]:
                 log.error('LDAP search did not return a {}.'.format(i))
                 return None
+
         # Set return dict
         for i in ['username', 'fullname', 'email', 'about']:
             cname = 'ckanext.ldap.' + i
@@ -313,8 +379,8 @@ def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
 
 
 def _check_ldap_password(cn, password):
-    """Checks that the given cn/password credentials work on the given CN.
-
+    """
+    Checks that the given cn/password credentials work on the given CN.
     @param cn: Common name to log on
     @param password: Password for cn
     @return: True on success, False on failure
@@ -335,6 +401,8 @@ def _check_ldap_password(cn, password):
         return False
     cnx.unbind_s()
     return True
+
+
 def _decode_str(s, encoding='utf-8'):
     try:
         # this try throws NameError if this is python3

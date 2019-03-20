@@ -5,6 +5,7 @@ from ckanext.ldap.plugin import config
 from ckanext.ldap.model.ldap_user import LdapUser
 from ckanext.ldap.controllers.user import _find_ldap_user
 
+
 @ckan.logic.auth_allow_anonymous_access
 def user_update(context, data_dict):
     """Ensure LDAP users cannot be edited, and name clash with ldap users"""
