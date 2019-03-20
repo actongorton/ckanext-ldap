@@ -233,7 +233,7 @@ def _get_or_create_ldap_user(ldap_user_dict):
         # TODO: Get the organizational mapping
         import json
         log.error('#\n' * 10)
-        log.error('config: {0}').format(json.dumps(config['ckanext.ldap.organization.map'], indent=2))
+        log.error(json.dumps(config['ckanext.ldap.organization.map'], indent=2))
         log.error('#\n' * 10)
 
         # TODO: Assign the member group
