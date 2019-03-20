@@ -36,8 +36,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ckanext/ldap/controllers/user.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="646">
-              <caret line="236" column="25" selection-start-line="236" selection-start-column="25" selection-end-line="236" selection-end-column="25" />
+            <state relative-caret-position="411">
+              <caret line="236" column="17" selection-start-line="236" selection-start-column="17" selection-end-line="236" selection-end-column="17" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -74,6 +74,8 @@
     <findStrings>
       <find>use_first</find>
       <find>organization.id</find>
+      <find>log.</find>
+      <find>map</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -208,12 +210,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1553030293000</updated>
-      <workItem from="1553030294320" duration="10183000" />
+      <workItem from="1553030294320" duration="10304000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10183000" />
+    <option name="totallyTimeSpent" value="10304000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -377,8 +379,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ckanext/ldap/controllers/user.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="236" column="25" selection-start-line="236" selection-start-column="25" selection-end-line="236" selection-end-column="25" />
+        <state relative-caret-position="411">
+          <caret line="236" column="17" selection-start-line="236" selection-start-column="17" selection-end-line="236" selection-end-column="17" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
