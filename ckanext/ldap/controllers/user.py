@@ -281,17 +281,17 @@ def _ldap_search(cnx, filter_str, attributes, non_unique='raise'):
     except ldap.FILTER_ERROR:
         log.error('LDAP filter (ckanext.ldap.search) is malformed')
         return None
-    if len(res) > 1:
-        if non_unique == 'log':
-            log.error('LDAP search.filter search returned more than one entry, ignoring. Fix the search to return only 1 or 0 results.')
-        elif non_unique == 'raise':
-            raise MultipleMatchError(config['ckanext.ldap.search.alt_msg'])
+    if len(res) > 1 and config[u'ckanext.ldap.use_first'] == False:
+        if non_unique == u'log':
+            log.error(u'LDAP search.filter search returned more than one entry, ignoring. Fix the search to return only 1 or 0 results.')
+        elif non_unique == u'raise':
+            raise MultipleMatchError(config[u'ckanext.ldap.search.alt_msg'])
         return None
-    elif len(res) == 1:
+    elif len(res) == 1 or (len(res) > 0 and config[u'ckanext.ldap.use_first'] == True):
         cn = res[0][0]
         attr = res[0][1]
         ret = {
-            'cn': cn,
+            u'cn': cn,
         }
 
         # Check required fields
