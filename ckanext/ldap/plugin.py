@@ -2,12 +2,13 @@ import ast
 import logging
 import pylons
 import ckan.plugins as p
+
+config = {}
+
 from ckanext.ldap.logic.auth.update import user_update
 from ckanext.ldap.logic.auth.create import user_create
 from ckanext.ldap.model.ldap_user import setup as model_setup
 from ckanext.ldap.lib.helpers import is_ldap_user, get_login_action
-config = {}
-
 
 log = logging.getLogger(__name__)
 
