@@ -231,8 +231,10 @@ def _get_or_create_ldap_user(ldap_user_dict):
         )
     elif 'ckanext.ldap.organization.map' in config:
         # TODO: Get the organizational mapping
+        print('#\n' * 10)
         print('config:')
         print(config['ckanext.ldap.organization.map'])
+        print('#\n' * 10)
 
         # TODO: Assign the member group
 
