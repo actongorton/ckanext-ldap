@@ -76,8 +76,9 @@ class LdapPlugin(p.SingletonPlugin):
             'ckanext.ldap.search.alt_msg': {'required_if': 'ckanext.ldap.search.alt'},
             'ckanext.ldap.fullname': {},
             'ckanext.ldap.organization.id': {},
-            'ckanext.ldap.organization.map': {'default': False, 'parse': _map_organizations},
             'ckanext.ldap.organization.role': {'default': 'member', 'validate': _allowed_roles},
+            'ckanext.ldap.organization.map': {'required_if': 'ckanext.ldap.organization.name', 'parse': _map_organizations},
+            'ckanext.ldap.organization.name': {'required_if': 'ckanext.ldap.organization.map'},
             'ckanext.ldap.ckan_fallback': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.prevent_edits': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.migrate': {'default': False, 'parse': p.toolkit.asbool},
@@ -175,7 +176,7 @@ def _map_organizations(v):
     try:
         return ast.literal_eval(v)
     except Exception:
-        raise ConfigError('Organization map should be a well formed dictionary wrapped in double quote marks')
+        raise ConfigError('Organization map should be a well formed python dictionary')
 
 
 def _allowed_roles(v):

@@ -229,24 +229,30 @@ def _get_or_create_ldap_user(ldap_user_dict):
                 'capacity': config['ckanext.ldap.organization.role']
             }
         )
-    elif 'ckanext.ldap.organization.map' in config:
-        # TODO: Get the organizational mapping
-        import json
-        log.error('#\n' * 10)
-        log.error(json.dumps(config['ckanext.ldap.organization.map'], indent=2))
-        log.error('#\n' * 10)
+    elif 'ckanext.ldap.organization.name' in config and \
+            'ckanext.ldap.organization.map' in config and\
+            'ckanext.ldap.organization.role' in config:
+        # Get the org name
+        org_name = config['ckanext.ldap.organization.name']
+        # Get the organizational mapping
+        org_map = config['ckanext.ldap.organization.map']
+        # Get the org id for the user
+        org_ldap_name = ldap_user_dict[org_name]
+        org_id = org_map[org_ldap_name]
 
-        # TODO: Assign the member group
-
-        # p.toolkit.get_action('member_create')(
-        #     context={'ignore_auth': True},
-        #     data_dict={
-        #         'id': config['ckanext.ldap.organization.id'],
-        #         'object': user_name,
-        #         'object_type': 'user',
-        #         'capacity': config['ckanext.ldap.organization.role']
-        #     }
-        # )
+        try:
+            # TODO: Assign the member group
+            p.toolkit.get_action('member_create')(
+                context={'ignore_auth': True},
+                data_dict={
+                    'id': org_id,
+                    'object': user_name,
+                    'object_type': 'user',
+                    'capacity': config['ckanext.ldap.organization.role']
+                }
+            )
+        except Exception:
+            log.error('The ')
 
     return user_name
 
