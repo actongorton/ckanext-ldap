@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1dbaef7f-67c8-45ed-ba17-b827d7c6a98b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/ckanext/ldap/controllers/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/ckanext/ldap/controllers/user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ckanext/ldap/plugin.py" beforeDir="false" afterPath="$PROJECT_DIR$/ckanext/ldap/plugin.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -13,11 +12,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ckanext/ldap/plugin.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="328">
-              <caret line="77" column="47" lean-forward="true" selection-start-line="77" selection-start-column="47" selection-end-line="77" selection-end-column="47" />
+            <state relative-caret-position="370">
+              <caret line="79" column="120" selection-start-line="79" selection-start-column="120" selection-end-line="79" selection-end-column="120" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -25,7 +24,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ckanext/ldap/controllers/user.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="570">
@@ -89,8 +88,8 @@
         <option value="$PROJECT_DIR$/ckanext/ldap/model/ldap_user.py" />
         <option value="$PROJECT_DIR$/ckanext/ldap/__init__.py" />
         <option value="$PROJECT_DIR$/ckanext/ldap/commands/ldap.py" />
-        <option value="$PROJECT_DIR$/ckanext/ldap/plugin.py" />
         <option value="$PROJECT_DIR$/ckanext/ldap/controllers/user.py" />
+        <option value="$PROJECT_DIR$/ckanext/ldap/plugin.py" />
       </list>
     </option>
   </component>
@@ -240,12 +239,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1553030293000</updated>
-      <workItem from="1553030294320" duration="15291000" />
+      <workItem from="1553030294320" duration="15375000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="15291000" />
+    <option name="totallyTimeSpent" value="15375000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -417,22 +416,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ckanext/ldap/plugin.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="328">
-          <caret line="77" column="47" lean-forward="true" selection-start-line="77" selection-start-column="47" selection-end-line="77" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ckanext/ldap/controllers/user.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="570">
           <caret line="252" column="31" selection-start-line="252" selection-start-column="31" selection-end-line="252" selection-end-column="31" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ckanext/ldap/plugin.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="370">
+          <caret line="79" column="120" selection-start-line="79" selection-start-column="120" selection-end-line="79" selection-end-column="120" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
