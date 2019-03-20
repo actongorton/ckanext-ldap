@@ -1,3 +1,4 @@
+import ast
 import logging
 import pylons
 import ckan.plugins as p
@@ -74,7 +75,7 @@ class LdapPlugin(p.SingletonPlugin):
             'ckanext.ldap.search.alt_msg': {'required_if': 'ckanext.ldap.search.alt'},
             'ckanext.ldap.fullname': {},
             'ckanext.ldap.organization.id': {},
-            'ckanext.ldap.organization.map': {'default': False, 'parse': p.toolkit.aslist},
+            'ckanext.ldap.organization.map': {'default': False, 'parse': ast.literal_eval},
             'ckanext.ldap.organization.role': {'default': 'member', 'validate': _allowed_roles},
             'ckanext.ldap.ckan_fallback': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.prevent_edits': {'default': False, 'parse': p.toolkit.asbool},
