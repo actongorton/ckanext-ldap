@@ -8,6 +8,7 @@ import ckan.model
 import pylons
 from ckan.lib.helpers import flash_notice, flash_error
 from ckan.logic.action import create
+from ckan.logic.action import get
 from ckan.common import _, request
 from ckan.model.user import User
 from ckanext.ldap.plugin import config
@@ -230,19 +231,24 @@ def _get_or_create_ldap_user(ldap_user_dict):
                 'capacity': config['ckanext.ldap.organization.role']
             }
         )
-    elif 'ckanext.ldap.organization.name' in config and \
-            config['ckanext.ldap.organization.map'] is True and \
+    elif config['ckanext.ldap.organization.map'] is True and \
+            'ckanext.ldap.organization.name' in config and \
             'ckanext.ldap.organization.role' in config:
+
         try:
             # Get the org field ldap identifier
             org_ldap_field = config['ckanext.ldap.organization.name']
-            # Get the organizational mapping
-            org_map = ldap_user_dict[org_ldap_field]
-            # Assign the member group
+            # Get the organization name of the user from the ldap record
+            org_name = ldap_user_dict[org_ldap_field]
+            # Get a dictionary list of the organizations
+            organizations = get.organization_list({}, {'all_fields': True})
+            # Find the organization id from the organizations list
+            org_id = [o['id'] for o in organizations if o['display_name'] == org_name]
+            # Assign to the user's organization
             p.toolkit.get_action('member_create')(
                 context={'ignore_auth': True},
                 data_dict={
-                    'id': org_map,
+                    'id': org_id[0] if len(org_id) > 0 else None,
                     'object': user_name,
                     'object_type': 'user',
                     'capacity': config['ckanext.ldap.organization.role']
