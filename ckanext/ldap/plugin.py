@@ -76,7 +76,7 @@ class LdapPlugin(p.SingletonPlugin):
             'ckanext.ldap.search.alt_msg': {'required_if': 'ckanext.ldap.search.alt'},
             'ckanext.ldap.fullname': {},
             'ckanext.ldap.organization.id': {},
-            'ckanext.ldap.organization.map': {'default': False, 'parse': ast.literal_eval},
+            'ckanext.ldap.organization.map': {'default': False, 'parse': _map_organizations},
             'ckanext.ldap.organization.role': {'default': 'member', 'validate': _allowed_roles},
             'ckanext.ldap.ckan_fallback': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.prevent_edits': {'default': False, 'parse': p.toolkit.asbool},
@@ -166,12 +166,24 @@ class LdapPlugin(p.SingletonPlugin):
         }
 
 
+def _map_organizations(v):
+    """
+    Raise an exception if the value cannot be converted to a dictinoary
+    :param v:
+    :return: dictionary
+    """
+    try:
+        return ast.literal_eval(v)
+    except Exception:
+        raise ConfigError('Organization map should be a well formed dictionary wrapped in double quote marks')
+
+
 def _allowed_roles(v):
     """
     Raise an exception if the value is not an allowed role
     """
     if v not in ['member', 'editor', 'admin']:
-        raise ConfigError('role must be one of "member", "editor" or "admin"')
+        raise ConfigError('Role must be one of "member", "editor" or "admin"')
 
 
 def _allowed_auth_methods(v):
