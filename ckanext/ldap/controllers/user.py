@@ -7,7 +7,7 @@ import ckan.plugins as p
 import ckan.model
 import pylons
 from ckan.lib.helpers import flash_notice, flash_error
-from ckan.logic.action.get import organization_list
+from ckan.logic.action import create
 from ckan.common import _, request
 from ckan.model.user import User
 from ckanext.ldap.plugin import config
@@ -235,22 +235,20 @@ def _get_or_create_ldap_user(ldap_user_dict):
             'ckanext.ldap.organization.role' in config:
         try:
             # Get the org field ldap identifier
-            # org_ldap_field = config['ckanext.ldap.organization.name']
-            # # Get the organizational mapping
-            # org_map = ldap_user_dict[org_ldap_field]
-            # # Retrieve the org id from the database
-            #
-            # # TODO: Assign the member group
-            # p.toolkit.get_action('member_create')(
-            #     context={'ignore_auth': True},
-            #     data_dict={
-            #         'id': org_id,
-            #         'object': user_name,
-            #         'object_type': 'user',
-            #         'capacity': config['ckanext.ldap.organization.role']
-            #     }
-            # )
-            print('debugging...')
+            org_ldap_field = config['ckanext.ldap.organization.name']
+            # Get the organizational mapping
+            org_map = ldap_user_dict[org_ldap_field]
+            # Assign the member group
+            p.toolkit.get_action('member_create')(
+                context={'ignore_auth': True},
+                data_dict={
+                    'id': org_map,
+                    'object': user_name,
+                    'object_type': 'user',
+                    'capacity': config['ckanext.ldap.organization.role']
+                }
+            )
+
         except Exception as e:
             log.error(e)
 
