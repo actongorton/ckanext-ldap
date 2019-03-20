@@ -7,6 +7,7 @@ import ckan.plugins as p
 import ckan.model
 import pylons
 from ckan.lib.helpers import flash_notice, flash_error
+from ckan.logic.action.get import organization_list
 from ckan.common import _, request
 from ckan.model.user import User
 from ckanext.ldap.plugin import config
@@ -230,29 +231,28 @@ def _get_or_create_ldap_user(ldap_user_dict):
             }
         )
     elif 'ckanext.ldap.organization.name' in config and \
-            'ckanext.ldap.organization.map' in config and\
+            config['ckanext.ldap.organization.map'] is True and \
             'ckanext.ldap.organization.role' in config:
-        # Get the org name
-        org_name = config['ckanext.ldap.organization.name']
-        # Get the organizational mapping
-        org_map = config['ckanext.ldap.organization.map']
-        # Get the org id for the user
-        org_ldap_name = ldap_user_dict[org_name]
-        org_id = org_map[org_ldap_name]
-
         try:
-            # TODO: Assign the member group
-            p.toolkit.get_action('member_create')(
-                context={'ignore_auth': True},
-                data_dict={
-                    'id': org_id,
-                    'object': user_name,
-                    'object_type': 'user',
-                    'capacity': config['ckanext.ldap.organization.role']
-                }
-            )
-        except Exception:
-            log.error('The ')
+            # Get the org field ldap identifier
+            # org_ldap_field = config['ckanext.ldap.organization.name']
+            # # Get the organizational mapping
+            # org_map = ldap_user_dict[org_ldap_field]
+            # # Retrieve the org id from the database
+            #
+            # # TODO: Assign the member group
+            # p.toolkit.get_action('member_create')(
+            #     context={'ignore_auth': True},
+            #     data_dict={
+            #         'id': org_id,
+            #         'object': user_name,
+            #         'object_type': 'user',
+            #         'capacity': config['ckanext.ldap.organization.role']
+            #     }
+            # )
+            print('debugging...')
+        except Exception as e:
+            log.error(e)
 
     return user_name
 

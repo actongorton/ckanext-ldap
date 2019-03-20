@@ -77,8 +77,8 @@ class LdapPlugin(p.SingletonPlugin):
             'ckanext.ldap.fullname': {},
             'ckanext.ldap.organization.id': {},
             'ckanext.ldap.organization.role': {'default': 'member', 'validate': _allowed_roles},
-            'ckanext.ldap.organization.map': {'required_if': 'ckanext.ldap.organization.name', 'parse': _map_organizations},
-            'ckanext.ldap.organization.name': {'required_if': 'ckanext.ldap.organization.map'},
+            'ckanext.ldap.organization.map': {'required_if': 'ckanext.ldap.organization.name'},
+            'ckanext.ldap.organization.name': {'required_if': 'ckanext.ldap.organization.map', 'parse': p.toolkit.asbool},
             'ckanext.ldap.ckan_fallback': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.prevent_edits': {'default': False, 'parse': p.toolkit.asbool},
             'ckanext.ldap.migrate': {'default': False, 'parse': p.toolkit.asbool},
@@ -165,18 +165,6 @@ class LdapPlugin(p.SingletonPlugin):
             'is_ldap_user': is_ldap_user,
             'get_login_action': get_login_action
         }
-
-
-def _map_organizations(v):
-    """
-    Raise an exception if the value cannot be converted to a dictinoary
-    :param v:
-    :return: dictionary
-    """
-    try:
-        return ast.literal_eval(v)
-    except Exception:
-        raise ConfigError('Organization map should be a well formed python dictionary')
 
 
 def _allowed_roles(v):
